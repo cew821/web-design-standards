@@ -13,22 +13,27 @@ global.window = document.defaultView;;
 $ = require('jquery');
 Accordion = require('../../../src/js/components/accordion.js');
 
+// `aria` prefixed attributes
 var EXPANDED = 'aria-expanded';
 var CONTROLS = 'aria-controls';
+var HIDDEN   = 'aria-hidden';
 
 describe('Accordion component', function () {
   var $el;
-  var $trigger;
+  var $button;
+  var $content;
+  var accordion;
 
   beforeEach(function () {
     var $component = $(template);
-    var accordion;
 
     $('body').append($component);
 
     accordion = new Accordion($component);
+
     $el = accordion.$root;
-    $trigger = $el.find('button');
+    $button = $el.find('button');
+    $content = $el.find('#' + $button.attr(CONTROLS));
   });   
 
   afterEach(function () {
@@ -41,22 +46,44 @@ describe('Accordion component', function () {
 
   describe('DOM state', function () {
     it('has an "aria-expanded" attribute', function () {
-      $trigger.attr(EXPANDED).should.not.be.undefined();
+      $button.attr(EXPANDED).should.not.be.undefined();
     });
 
     it('has an "aria-controls" attribute', function () {
-      $trigger.attr(CONTROLS).should.not.be.undefined();
+      $button.attr(CONTROLS).should.not.be.undefined();
     });
 
-    it('toggles "aria-expanded" when show is triggered', function () {
-      $trigger.trigger('click');
-      $trigger.attr(EXPANDED).should.equal('true');
+    describe('when show is triggered', function () {
+      beforeEach(function () {
+        accordion.show($button);
+      });
+
+      afterEach(function () {
+        accordion.hide($button);
+      });
+
+      it('toggles "aria-expanded" to true', function () {
+        $button.attr(EXPANDED).should.equal('true');
+      });
+
+      it('toggles "aria-hidden" to false', function () {
+        $content.attr(HIDDEN).should.equal('false');
+      });
     });
 
-    it('toggles "aria-expanded" when hide is triggered', function () {
-      $trigger.trigger('click');
-      $trigger.trigger('click');
-      $trigger.attr(EXPANDED).should.equal('false');
+    describe('when hide is triggered', function () {
+      beforeEach(function() {
+        accordion.show($button);
+        accordion.hide($button);
+      });
+
+      it('toggles "aria-expanded" to false', function () {
+        $button.attr(EXPANDED).should.equal('false');
+      });
+
+      it('toggles "aria-hidden" to true', function () {
+        $content.attr(HIDDEN).should.equal('true');
+      });
     });
   });
 });
